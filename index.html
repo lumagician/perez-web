@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Run main.py with Pyodide</title>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+</head>
+<body>
+  <h1>Pyodide: Load and Run main.py</h1>
+  <button onclick="runPython()">Run main.py</button>
+  <pre id="output"></pre>
+
+  <script type="text/javascript">
+    let pyodide;
+
+    async function runPython() {
+      const output = document.getElementById("output");
+      output.textContent = "Loading Pyodide...";
+      
+      if (!pyodide) {
+        pyodide = await loadPyodide();
+        await pyodide.loadPackage(["numpy", "pandas"]);
+      }
+
+      output.textContent = "Fetching main.py...";
+      const response = await fetch("main.py");
+      const pythonCode = await response.text();
+
+      try {
+        await pyodide.runPythonAsync(pythonCode);
+        const result = pyodide.globals.get("output");
+        output.textContent = result || "main.py executed.";
+      } catch (err) {
+        output.textContent = "Error:\n" + err;
+      }
+    }
+  </script>
+</body>
+</html>
